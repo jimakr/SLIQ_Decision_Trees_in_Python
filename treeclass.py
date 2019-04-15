@@ -1,81 +1,3 @@
-def algorithm_u(ns, m):
-    def visit(n, a):
-        ps = [[] for i in range(m)]
-        for j in range(n):
-            ps[a[j + 1]].append(ns[j])
-        return ps
-
-    def f(mu, nu, sigma, n, a):
-        if mu == 2:
-            yield visit(n, a)
-        else:
-            for v in f(mu - 1, nu - 1, (mu + sigma) % 2, n, a):
-                yield v
-        if nu == mu + 1:
-            a[mu] = mu - 1
-            yield visit(n, a)
-            while a[nu] > 0:
-                a[nu] = a[nu] - 1
-                yield visit(n, a)
-        elif nu > mu + 1:
-            if (mu + sigma) % 2 == 1:
-                a[nu - 1] = mu - 1
-            else:
-                a[mu] = mu - 1
-            if (a[nu] + sigma) % 2 == 1:
-                for v in b(mu, nu - 1, 0, n, a):
-                    yield v
-            else:
-                for v in f(mu, nu - 1, 0, n, a):
-                    yield v
-            while a[nu] > 0:
-                a[nu] = a[nu] - 1
-                if (a[nu] + sigma) % 2 == 1:
-                    for v in b(mu, nu - 1, 0, n, a):
-                        yield v
-                else:
-                    for v in f(mu, nu - 1, 0, n, a):
-                        yield v
-
-    def b(mu, nu, sigma, n, a):
-        if nu == mu + 1:
-            while a[nu] < mu - 1:
-                yield visit(n, a)
-                a[nu] = a[nu] + 1
-            yield visit(n, a)
-            a[mu] = 0
-        elif nu > mu + 1:
-            if (a[nu] + sigma) % 2 == 1:
-                for v in f(mu, nu - 1, 0, n, a):
-                    yield v
-            else:
-                for v in b(mu, nu - 1, 0, n, a):
-                    yield v
-            while a[nu] < mu - 1:
-                a[nu] = a[nu] + 1
-                if (a[nu] + sigma) % 2 == 1:
-                    for v in f(mu, nu - 1, 0, n, a):
-                        yield v
-                else:
-                    for v in b(mu, nu - 1, 0, n, a):
-                        yield v
-            if (mu + sigma) % 2 == 1:
-                a[nu - 1] = 0
-            else:
-                a[mu] = 0
-        if mu == 2:
-            yield visit(n, a)
-        else:
-            for v in b(mu - 1, nu - 1, (mu + sigma) % 2, n, a):
-                yield v
-
-    n = len(ns)
-    a = [0] * (n + 1)
-    for j in range(1, m + 1):
-        a[n - m + j] = j - 1
-    return f(m, n, 0, n, a)
-
-
 listed_data = [[20, 1],
                [20, 3],
                [20, 10],
@@ -107,7 +29,7 @@ dictrid = {1: 1,
            7: 1,
            8: 1,
            9: 1,
-           10: 0, }
+           10: 0,}
 
 
 def gini_list(list_a, list_b, classlist):
@@ -122,12 +44,12 @@ def gini_list(list_a, list_b, classlist):
     pos_b = 0.0
 
     for item in list_a:
-        if classlist[item[1]] == 1:
-            pos_a += 1
+         if classlist[item[1]] == 1:
+             pos_a += 1
 
     for item in list_b:
-        if classlist[item[1]] == 1:
-            pos_b += 1
+         if classlist[item[1]] == 1:
+             pos_b += 1
 
     neg_a = n1 - pos_a
     neg_b = n2 - pos_b
@@ -189,6 +111,29 @@ def split_atribute_descrete(list_a):
         gini = gini_list(a, b, dictrid)
         if best_gini > gini:
             best_gini = gini
+def split_leaf(leafset, data, value):
+    leftset = {}
+    rightset = {}
+
+    for val in data:  #go through the data
+        if val[1] in leafset and val[0] < value:   #check if id belongs to left leaf
+            leftset.add(val[1])
+        elif val[1] in leafset:   #the data is sorted so if the id is in the leafset it belongs to the right leaf
+            rightset.add(val[1])
+
+    return leftset, rightset
+
+
+split = gini_list([[30, 2],
+                   [30, 4],
+                   [30, 7],
+                   [40, 5],
+                   [40, 9]], [[20, 1],
+                              [20, 3],
+                              [20, 10],
+                              [25, 8],
+                              [20, 6]]
+                  , dictrid)
 
     return best_gini
 
