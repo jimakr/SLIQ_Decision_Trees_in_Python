@@ -1,3 +1,5 @@
+from algorithm_u import algorithm_u
+
 listed_data = [[20, 1],
                [20, 3],
                [20, 10],
@@ -111,6 +113,26 @@ def split_atribute_descrete(list_a):
         gini = gini_list(a, b, dictrid)
         if best_gini > gini:
             best_gini = gini
+
+    return best_gini
+
+
+def choose_split(leafset, dataset):
+    #leafset = {5, 3, 4, 10, 6, 8, 1, 2, 7, 9}
+    #leaf_list = [item for item in list_a if leafset.__contains__(item[1])]
+    best = 2
+    for list in dataset:
+        if isinstance(list[0][0], str):
+            temp = split_atribute_descrete(list)
+        else:
+            temp = split_atribute(list)
+
+        if best > temp:
+            best = temp
+        #print(temp)
+    return best
+
+
 def split_leaf(leafset, data, value):
     leftset = {}
     rightset = {}
@@ -124,19 +146,7 @@ def split_leaf(leafset, data, value):
     return leftset, rightset
 
 
-split = gini_list([[30, 2],
-                   [30, 4],
-                   [30, 7],
-                   [40, 5],
-                   [40, 9]], [[20, 1],
-                              [20, 3],
-                              [20, 10],
-                              [25, 8],
-                              [20, 6]]
-                  , dictrid)
-
-    return best_gini
-
-
-print(split_atribute_descrete(family_data))
-print(split_atribute(listed_data))
+dataset = [family_data, listed_data]
+#print(split_atribute_descrete(family_data))
+#print(split_atribute(listed_data))
+print(choose_split({0,1}, dataset))
