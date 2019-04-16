@@ -1,3 +1,4 @@
+from anytree import node
 from algorithm_u import algorithm_u
 
 listed_data = [[20, 1],
@@ -31,7 +32,7 @@ dictrid = {1: 1,
            7: 1,
            8: 1,
            9: 1,
-           10: 0,}
+           10: 0, }
 
 
 def gini_list(list_a, list_b, classlist):
@@ -60,28 +61,10 @@ def gini_list(list_a, list_b, classlist):
     return (n1/n)*gini_a + (n2/n)*gini_b
 
 
-def split_list(index, list_a):
-    #leafset = {5, 3, 4, 10, 6, 8, 1}
+def split_list(list_a, index):
     right = list_a[index:]
     left = list_a[0:index]
-    #left = [item for item in list_a[0:index] if leafset.__contains__(item[1])]
     return left, right
-
-
-def split_atribute(list_a):
-    last = list_a[0][0]
-    index = -1
-    best_gini = 2
-    for item in list_a:
-        index += 1
-        if item[0] != last:
-            last = item[0]
-            left, right = split_list(index, list_a)
-            gini = gini_list(left, right, dictrid)
-            if best_gini > gini:
-                best_gini = gini
-
-    return best_gini
 
 
 def split_list_descrete(list_a, split):
@@ -97,10 +80,29 @@ def split_list_descrete(list_a, split):
     return left, right
 
 
+def split_atribute(list_a):
+    last = list_a[0][0]
+    index = -1
+    best_gini = 2
+    best_index = 0
+    for item in list_a:
+        index += 1
+        if item[0] != last:
+            last = item[0]
+            left, right = split_list(list_a, index)
+            gini = gini_list(left, right, dictrid)
+            if best_gini > gini:
+                best_gini = gini
+                best_index = index
+
+    return best_gini, list_a[best_index][0]
+
+
 def split_atribute_descrete(list_a):
     last = list_a[0][0]
     uniques = [last]
     best_gini = 2
+    best_split = []
     for item in list_a:
         if item[0] != last:
             last = item[0]
@@ -113,24 +115,26 @@ def split_atribute_descrete(list_a):
         gini = gini_list(a, b, dictrid)
         if best_gini > gini:
             best_gini = gini
+            best_split = split
 
-    return best_gini
+    return best_gini, best_split
 
 
 def choose_split(leafset, dataset):
-    #leafset = {5, 3, 4, 10, 6, 8, 1, 2, 7, 9}
-    #leaf_list = [item for item in list_a if leafset.__contains__(item[1])]
     best = 2
+    best_split = 0
     for list in dataset:
-        if isinstance(list[0][0], str):
-            temp = split_atribute_descrete(list)
+        leaf_list = [item for item in list if leafset.__contains__(item[1])]  #filter list to contain only leaf items
+        if isinstance(list[0][0], str):  #check if list contains discrete attributes or continuous
+            temp, split = split_atribute_descrete(leaf_list)
         else:
-            temp = split_atribute(list)
+            temp, split = split_atribute(leaf_list)
 
         if best > temp:
             best = temp
-        #print(temp)
-    return best
+            best_split = split
+        #print(split)
+    return best, best_split
 
 
 def split_leaf(leafset, data, value):
@@ -145,8 +149,14 @@ def split_leaf(leafset, data, value):
 
     return leftset, rightset
 
+def train_tree(dataset):
+    leaf = {5, 3, 4, 10, 6, 8, 1, 2, 7, 9}
+    leaves = [leaf]
+    gini , split = choose_split(leaf, dataset)
+    root = split
+    return root
+
 
 dataset = [family_data, listed_data]
-#print(split_atribute_descrete(family_data))
-#print(split_atribute(listed_data))
-print(choose_split({0,1}, dataset))
+print(choose_split({5, 3, 4, 10, 6, 8, 1, 2, 7, 9}, dataset))
+print(train_tree(dataset))
