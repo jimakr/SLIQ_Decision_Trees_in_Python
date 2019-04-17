@@ -1,5 +1,5 @@
-from anytree import node
 from algorithm_u import algorithm_u
+from collections import Counter
 
 listed_data = [[20, 1],
                [20, 3],
@@ -34,6 +34,9 @@ dictrid = {1: 1,
            9: 1,
            10: 0, }
 
+unfinished_nodes = []
+
+ex = [25, 'agamos']
 
 def gini_list(list_a, list_b, classlist):
     n1 = len(list_a)
@@ -47,28 +50,27 @@ def gini_list(list_a, list_b, classlist):
     pos_b = 0.0
 
     for item in list_a:
-         if classlist[item[1]] == 1:
-             pos_a += 1
+        if classlist[item[1]] == 1:
+            pos_a += 1
 
     for item in list_b:
-         if classlist[item[1]] == 1:
-             pos_b += 1
+        if classlist[item[1]] == 1:
+            pos_b += 1
 
     neg_a = n1 - pos_a
     neg_b = n2 - pos_b
-    gini_a = 1 - float((pos_a*pos_a + neg_a*neg_a)/(n1*n1))
-    gini_b = 1 - float((pos_b*pos_b + neg_b*neg_b)/(n2*n2))
-    return (n1/n)*gini_a + (n2/n)*gini_b
+    gini_a = 1 - float((pos_a * pos_a + neg_a * neg_a) / (n1 * n1))
+    gini_b = 1 - float((pos_b * pos_b + neg_b * neg_b) / (n2 * n2))
+    return (n1 / n) * gini_a + (n2 / n) * gini_b
 
 
-def split_list(list_a, index):
-    right = list_a[index:]
-    left = list_a[0:index]
+def split_list(list_a, split):
+    right = list_a[split:]
+    left = list_a[0:split]
     return left, right
 
 
 def split_list_descrete(list_a, split):
-    #split = [[1,2],[3,4]]
     left = []
     right = []
     for item in list_a:
@@ -95,7 +97,7 @@ def split_atribute(list_a):
                 best_gini = gini
                 best_index = index
 
-    return best_gini, list_a[best_index][0]
+    return best_gini, list_a[best_index][0]  # list_a[best_index][0]
 
 
 def split_atribute_descrete(list_a):
@@ -123,9 +125,13 @@ def split_atribute_descrete(list_a):
 def choose_split(leafset, dataset):
     best = 2
     best_split = 0
+    best_list = []
+    column_index = -1
+    best_column_index = 0
     for list in dataset:
-        leaf_list = [item for item in list if leafset.__contains__(item[1])]  #filter list to contain only leaf items
-        if isinstance(list[0][0], str):  #check if list contains discrete attributes or continuous
+        column_index += 1
+        leaf_list = [item for item in list if leafset.__contains__(item[1])]  # filter list to contain only leaf items
+        if isinstance(list[0][0], str):  # check if list contains discrete attributes or continuous
             temp, split = split_atribute_descrete(leaf_list)
         else:
             temp, split = split_atribute(leaf_list)
@@ -133,30 +139,78 @@ def choose_split(leafset, dataset):
         if best > temp:
             best = temp
             best_split = split
-        #print(split)
-    return best, best_split
+            best_column_index = column_index
+            best_list = leaf_list
+
+        # print(split)
+    # print(best_list)
+    left, right = split_leaf(best_split, best_list)
+
+    return {'column_split': best_column_index, 'split': best_split, 'left': left, 'right': right}
 
 
-def split_leaf(leafset, data, value):
-    leftset = {}
-    rightset = {}
+def split_leaf(split, leaflist):
+    if isinstance(leaflist[0][0], str):  # check if list contains discrete attributes or continuous
+        left, right = split_list_descrete(leaflist, split)
+    else:
+        left, right = split_list(leaflist, [item[0] for item in leaflist].index(split))
 
-    for val in data:  #go through the data
-        if val[1] in leafset and val[0] < value:   #check if id belongs to left leaf
-            leftset.add(val[1])
-        elif val[1] in leafset:   #the data is sorted so if the id is in the leafset it belongs to the right leaf
-            rightset.add(val[1])
-
+    leftset = set([item[1] for item in left])
+    rightset = set([item[1] for item in right])
     return leftset, rightset
 
-def train_tree(dataset):
+
+def decide_class(leafset):
+    temp = Counter([dictrid[id] for id in leafset])
+    present = temp.most_common(1)[0][1]/len(leafset)
+    return temp.most_common(1)[0][0], present
+
+
+def train_tree(dataset, minleafexample, similarity_stop):
     leaf = {5, 3, 4, 10, 6, 8, 1, 2, 7, 9}
-    leaves = [leaf]
-    gini , split = choose_split(leaf, dataset)
-    root = split
+    root = choose_split(leaf, dataset)
+    unfinished_nodes.append(root)
+    while len(unfinished_nodes) > 0:
+        node = unfinished_nodes.pop(0)
+        for child in ['left', 'right']:
+            if decide_class(node[child])[1] < similarity_stop and len(node[child]) > minleafexample:
+                node[child] = choose_split(node[child], dataset)
+                unfinished_nodes.append(node[child])
+            else:
+                node[child] = decide_class(node[child])
+            # if decide_class(node[child])[1] > 0.8:
+            #     print('man')
+
     return root
 
 
-dataset = [family_data, listed_data]
-print(choose_split({5, 3, 4, 10, 6, 8, 1, 2, 7, 9}, dataset))
-print(train_tree(dataset))
+def make_prediction(tree,example):
+    if not isinstance(tree, dict):
+        return tree
+    value = example[tree['column_split']]
+    if isinstance(value, str):
+        if tree['split'][0].__contains__(value):
+            res = make_prediction(tree['left'],example)
+        else:
+            res = make_prediction(tree['right'],example)
+    else:
+        if value < tree['split']:
+            res = make_prediction(tree['left'],example)
+        else:
+            res = make_prediction(tree['right'], example)
+    return res
+
+def print_the_tree(node, prefix):
+    print(prefix[:-2] + "--:Split with: " + str(node['split']))
+    prefix = prefix + '|  '
+    for child in ['left', 'right']:
+        if isinstance(node[child], dict):
+            print_the_tree(node[child], prefix)
+        else:
+            print(prefix[:-2] + '--:' + str(node[child]))
+
+
+dataset = [listed_data, family_data]
+tree = train_tree(dataset, 5, 0.9)
+print_the_tree(train_tree(dataset, 5, 0.9), '')
+print(make_prediction(tree, ex))
