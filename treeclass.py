@@ -213,7 +213,7 @@ def print_the_tree(node, columnnames, prefix = ''):
 
 
 #dataset = [listed_data, family_data]
-dataset, dictrid, columnnames = openthefile('heart.csv')
+dataset, dictrid, test_data, test_dictionary, columnnames = openthefile('heart.csv')
 # print('the dataset is')
 # print(dictrid)
 # columnnames = list(columnnames)
