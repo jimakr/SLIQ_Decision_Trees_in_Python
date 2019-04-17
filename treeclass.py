@@ -1,5 +1,6 @@
 from algorithm_u import algorithm_u
 from collections import Counter
+from open_file import openthefile
 
 listed_data = [[20, 1],
                [20, 3],
@@ -36,7 +37,7 @@ dictrid = {1: 1,
 
 unfinished_nodes = []
 
-ex = [25, 'agamos']
+ex = []
 
 def gini_list(list_a, list_b, classlist):
     n1 = len(list_a)
@@ -167,7 +168,7 @@ def decide_class(leafset):
 
 
 def train_tree(dataset, minleafexample, similarity_stop):
-    leaf = {5, 3, 4, 10, 6, 8, 1, 2, 7, 9}
+    leaf = {item for item in range(0,len(dictrid))}
     root = choose_split(leaf, dataset)
     unfinished_nodes.append(root)
     while len(unfinished_nodes) > 0:
@@ -200,17 +201,27 @@ def make_prediction(tree,example):
             res = make_prediction(tree['right'], example)
     return res
 
-def print_the_tree(node, prefix):
-    print(prefix[:-2] + "--:Split with: " + str(node['split']))
+
+def print_the_tree(node, columnnames, prefix = ''):
+    print(prefix[:-2] + "--Split with: " + str(node['split']) + ' at column '+ str(columnnames[node['column_split']]))
     prefix = prefix + '|  '
     for child in ['left', 'right']:
         if isinstance(node[child], dict):
-            print_the_tree(node[child], prefix)
+            print_the_tree(node[child],columnnames, prefix)
         else:
-            print(prefix[:-2] + '--:' + str(node[child]))
+            print(prefix[:-2] + '--' + str(node[child]))
 
 
-dataset = [listed_data, family_data]
+#dataset = [listed_data, family_data]
+dataset, dictrid, columnnames = openthefile('heart.csv')
+# print('the dataset is')
+# print(dictrid)
+# columnnames = list(columnnames)
+# print(columnnames)
+# leaf = {item for item in range(0,len(dictrid))}
+# print(len(leaf))
+# print('start trainig')
 tree = train_tree(dataset, 5, 0.9)
-print_the_tree(train_tree(dataset, 5, 0.9), '')
+print_the_tree(tree, columnnames)
+ex = [56,1,1,120,236,0,1,178,0,0.8,2,0,2]
 print(make_prediction(tree, ex))
