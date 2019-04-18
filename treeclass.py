@@ -61,7 +61,7 @@ class Decisiontree:
             if item[0] != last:
                 last = item[0]
                 left, right = self.split_list(list_a, index)
-                gini = self.gini_list(left, right, dictrid)
+                gini = self.gini_list(left, right, self.dictrid)
                 if best_gini > gini:
                     best_gini = gini
                     best_index = index
@@ -82,7 +82,7 @@ class Decisiontree:
 
         for split in sets:
             a, b = self.split_list_descrete(list_a, split)
-            gini = self.gini_list(a, b, dictrid)
+            gini = self.gini_list(a, b, self.dictrid)
             if best_gini > gini:
                 best_gini = gini
                 best_split = split
@@ -124,19 +124,19 @@ class Decisiontree:
         return leftset, rightset
 
     def decide_class(self, leafset):
-        temp = Counter([dictrid[id] for id in leafset])
+        temp = Counter([self.dictrid[id] for id in leafset])
         present = temp.most_common(1)[0][1]/len(leafset)
         return temp.most_common(1)[0][0], present
 
-    def train_tree(self, dataset, minleafexample, similarity_stop):
-        leaf = {item for item in range(0,len(dictrid))}
-        root = self.choose_split(leaf, dataset)
+    def train_tree(self, minleafexample, similarity_stop):
+        leaf = {item for item in range(0,len(self.dictrid))}
+        root = self.choose_split(leaf, self.dataset)
         self.unfinished_nodes.append(root)
         while len(self.unfinished_nodes) > 0:
             node = self.unfinished_nodes.pop(0)
             for child in ['left', 'right']:
                 if self.decide_class(node[child])[1] < similarity_stop and len(node[child]) > minleafexample:
-                    node[child] = self.choose_split(node[child], dataset)
+                    node[child] = self.choose_split(node[child], self.dataset)
                     self.unfinished_nodes.append(node[child])
                 else:
                     node[child] = self.decide_class(node[child])
@@ -145,35 +145,35 @@ class Decisiontree:
 
         return root
 
-    def make_prediction(self, tree,example):
-        if not isinstance(tree, dict):
-            return tree
-        value = example[tree['column_split']]
+    def make_prediction(self, example):
+        if not isinstance(self.tree, dict):
+            return self.tree
+        value = example[self.tree['column_split']]
         if isinstance(value, str):
-            if tree['split'][0].__contains__(value):
-                res = self.make_prediction(tree['left'],example)
+            if self.tree['split'][0].__contains__(value):
+                res = self.make_prediction(self.tree['left'], example)
             else:
-                res = self.make_prediction(tree['right'],example)
+                res = self.make_prediction(self.tree['right'], example)
         else:
-            if value < tree['split']:
-                res = self.make_prediction(tree['left'],example)
+            if value < self.tree['split']:
+                res = self.make_prediction(self.tree['left'], example)
             else:
-                res = self.make_prediction(tree['right'], example)
+                res = self.make_prediction(self.tree['right'], example)
         return res
 
-    def print_the_tree(self, node, columnnames, prefix = ''):
-        print(prefix[:-2] + "--Split with: " + str(node['split']) + ' at column '+ str(columnnames[node['column_split']]))
+    def print_the_tree(self, node, prefix=''):
+        print(prefix[:-2] + "--Split with: " + str(node['split']) + ' at column '+ str(self.columnnames[node['column_split']]))
         prefix = prefix + '|  '
         for child in ['left', 'right']:
             if isinstance(node[child], dict):
-                self.print_the_tree(node[child],columnnames, prefix)
+                self.print_the_tree(node[child], prefix)
             else:
                 print(prefix[:-2] + '--' + str(node[child]))
 
     def calculate_metrics(self, test_data):
         correct = 0
         for index, row in test_data.iterrows():
-            pred = self.make_prediction(tree, row)
+            pred = self.make_prediction(self.tree, row)
 
             if pred[0] == row[-1]:
                 correct = correct + 1
@@ -182,10 +182,3 @@ class Decisiontree:
 
     def load_dataset(self, dataframe):
         self.dataset, self.dictrid, self.columnnames = openthefile(dataframe)
-
-
-dataset2, dictrid, test_data, columnnames = openthefile('heart.csv')
-dec = Decisiontree()
-tree = dec.train_tree(dataset2, 5, 0.9)
-dec.print_the_tree(tree, columnnames)
-dec.calculate_metrics(test_data)
