@@ -108,7 +108,9 @@ class Decisiontree:
                 best_split = split
                 best_column_index = column_index
                 best_list = leaf_list
-
+            if temp == 0:
+                break
+            print("atr")
         left, right = self.split_leaf(best_split, best_list)
 
         return {'column_split': best_column_index, 'split': best_split, 'left': left, 'right': right}
