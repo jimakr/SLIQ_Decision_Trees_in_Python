@@ -142,23 +142,23 @@ class Decisiontree:
                     node[child] = self.decide_class(node[child])
                 # if decide_class(node[child])[1] > 0.8:
                 #     print('man')
-
+        self.tree = root
         return root
 
-    def make_prediction(self, example):
-        if not isinstance(self.tree, dict):
-            return self.tree
-        value = example[self.tree['column_split']]
+    def make_prediction(self, node, example):
+        if not isinstance(node, dict):
+            return node
+        value = example[node['column_split']]
         if isinstance(value, str):
-            if self.tree['split'][0].__contains__(value):
-                res = self.make_prediction(self.tree['left'], example)
+            if node['split'][0].__contains__(value):
+                res = self.make_prediction(node['left'], example)
             else:
-                res = self.make_prediction(self.tree['right'], example)
+                res = self.make_prediction(node['right'], example)
         else:
-            if value < self.tree['split']:
-                res = self.make_prediction(self.tree['left'], example)
+            if value < node['split']:
+                res = self.make_prediction(node['left'], example)
             else:
-                res = self.make_prediction(self.tree['right'], example)
+                res = self.make_prediction(node['right'], example)
         return res
 
     def print_the_tree(self, node, prefix=''):

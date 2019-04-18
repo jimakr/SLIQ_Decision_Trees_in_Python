@@ -1,7 +1,6 @@
 from sortedcontainers import SortedList
 
 
-
 def openthefile(data):
 
     num_cols = len(data.columns)
