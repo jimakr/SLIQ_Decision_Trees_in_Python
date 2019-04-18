@@ -1,119 +1,129 @@
 from algorithm_u import algorithm_u
 from collections import Counter
-from open_file import openthefile
+from open_file import transformdatatolists
 import csv
 
 
+# the main tree class contains all the values needed and the data to train it
+# It implements sth SLIQ decision tree algorithm
 class Decisiontree:
-    unfinished_nodes = []
-    tree = {}
-    dataset = []
-    dictrid = {}
+    unfinished_nodes = [] # list with nodes that need splitting
+    tree = {} # our tree model
+    dataset = [] # the transformed data
+    dictrid = {} # a dictionary
     columnnames = []
 
-    def gini_list(self, list_a, list_b, classlist):
-        n1 = len(list_a)
-        n2 = len(list_b)
+    def gini_list(self, leaflist_left, leaflist_right, classlist):
+        n_left = len(leaflist_left)
+        n_right = len(leaflist_right)
 
-        if n1 == 0 or n2 == 0:
+        if n_left == 0 or n_right == 0:  # check for empty lists
             return 2
 
-        n = n1 + n2
-        pos_a = 0.0
-        pos_b = 0.0
+        n = n_left + n_right
+        positive_left = 0.0
+        positive_right = 0.0
 
-        for item in list_a:
+        for item in leaflist_left:
             if classlist[item[1]] == 1:
-                pos_a += 1
+                positive_left += 1
 
-        for item in list_b:
+        for item in leaflist_right:
             if classlist[item[1]] == 1:
-                pos_b += 1
+                positive_right += 1
 
-        neg_a = n1 - pos_a
-        neg_b = n2 - pos_b
-        gini_a = 1 - float((pos_a * pos_a + neg_a * neg_a) / (n1 * n1))
-        gini_b = 1 - float((pos_b * pos_b + neg_b * neg_b) / (n2 * n2))
-        return (n1 / n) * gini_a + (n2 / n) * gini_b
+        neg_a = n_left - positive_left
+        neg_b = n_right - positive_right
+        gini_a = 1 - float((positive_left * positive_left + neg_a * neg_a) / (n_left * n_left))
+        gini_b = 1 - float((positive_right * positive_right + neg_b * neg_b) / (n_right * n_right))
+        return (n_left / n) * gini_a + (n_right / n) * gini_b
 
-    def split_list(self, list_a, split):
-        right = list_a[split:]
-        left = list_a[0:split]
-        return left, right
+    # splits the leaflist for an index value
+    def split_list(self, leaflist, split):
+        right = leaflist[split:]
+        left = leaflist[0:split]
+        return left, right # returns 2 lists
 
-    def split_list_descrete(self, list_a, split):
+    # splits the leaflist for two sets of discrete values
+    def split_list_descrete(self, leaflist, split):
         left = []
         right = []
-        for item in list_a:
-            if split[0].__contains__(item[0]):
+        for item in leaflist: #checks every item in list
+            if split[0].__contains__(item[0]):  # if it is contained in the left child set
                 left.append(item)
             else:
                 right.append(item)
 
-        return left, right
+        return left, right #returns 2 lists
 
-    def split_atribute(self, list_a):
-        last = list_a[0][0]
+    # checks the best split for a spesific continuous attribute
+    def split_atribute(self, leaflist):
+        last = leaflist[0][0]
         index = -1
         best_gini = 2
         best_index = 0
-        for item in list_a:
+        for value in leaflist: # for every unique value
             index += 1
-            if item[0] != last:
-                last = item[0]
-                left, right = self.split_list(list_a, index)
-                gini = self.gini_list(left, right, self.dictrid)
-                if best_gini > gini:
+            if value[0] != last:
+                last = value[0]
+                left, right = self.split_list(leaflist, index) # splits the list at that value
+                gini = self.gini_list(left, right, self.dictrid) # calculates gini index
+                if best_gini > gini:  # keeps best gini
                     best_gini = gini
                     best_index = index
 
-        return best_gini, list_a[best_index][0]
+        return best_gini, leaflist[best_index][0]
 
-    def split_atribute_descrete(self, list_a):
-        last = list_a[0][0]
+    # check the best split for a specific discrete attribute
+    def split_atribute_descrete(self, leaflist):
+        last = leaflist[0][0]
         uniques = [last]
         best_gini = 2
         best_split = []
-        for item in list_a:
+        for item in leaflist: # finds every unique element in list
             if item[0] != last:
                 last = item[0]
                 uniques.append(item[0])
 
+        #calculate every possible subset and keep it in pairs of lists in a list.
         sets = list(algorithm_u(uniques, 2))
 
-        for split in sets:
-            a, b = self.split_list_descrete(list_a, split)
-            gini = self.gini_list(a, b, self.dictrid)
-            if best_gini > gini:
+        for split in sets:# for every possible split
+            a, b = self.split_list_descrete(leaflist, split) # splits list
+            gini = self.gini_list(a, b, self.dictrid) #calculates gini
+            if best_gini > gini: #keeps best gini
                 best_gini = gini
                 best_split = split
 
         return best_gini, best_split
 
+    #checks best splits in every attribute and keeps the best
     def choose_split(self, leafset, dataset):
         best = 2
         best_split = 0
         best_list = []
         column_index = -1
         best_column_index = 0
-        for list in dataset:
+        for list in dataset: # for every attribute
             column_index += 1
-            leaf_list = [item for item in list if leafset.__contains__(item[1])]  # filter list to contain only leaf items
+            # filter list to contain only this leaf items
+            leaf_list = [item for item in list if leafset.__contains__(item[1])]
+
             if isinstance(list[0][0], str):  # check if list contains discrete attributes or continuous
                 temp, split = self.split_atribute_descrete(leaf_list)
             else:
                 temp, split = self.split_atribute(leaf_list)
 
-            if best > temp:
+            if best > temp: # keeps the best split
                 best = temp
                 best_split = split
                 best_column_index = column_index
                 best_list = leaf_list
-            if temp == 0:
+            if temp == 0: # gini lowest value is 0 so we don't have to check any more
                 break
-            print("atr")
-        left, right = self.split_leaf(best_split, best_list)
+        left, right = self.split_leaf(best_split, best_list) # splits the node
 
+        # makes it from a set of ids to a new node
         return {'column_split': best_column_index, 'split': best_split, 'left': left, 'right': right}
 
     def split_leaf(self, split, leaflist):
@@ -132,20 +142,19 @@ class Decisiontree:
         present = temp.most_common(1)[0][1]/len(leafset)
         return temp.most_common(1)[0][0], present
 
+    # trains the tree and takes as input minimum number of childer and similariry of class in leaf in order to split it
     def train_tree(self, minleafexample, similarity_stop):
-        leaf = {item for item in range(0,len(self.dictrid))}
-        root = self.choose_split(leaf, self.dataset)
-        self.unfinished_nodes.append(root)
+        leaf = {item for item in range(0,len(self.dictrid))} # creates the first set containing every item id
+        root = self.choose_split(leaf, self.dataset) #makes first split
+        self.unfinished_nodes.append(root) # inserts it into list
         while len(self.unfinished_nodes) > 0:
             node = self.unfinished_nodes.pop(0)
-            for child in ['left', 'right']:
-                if self.decide_class(node[child])[1] < similarity_stop and len(node[child]) > minleafexample:
-                    node[child] = self.choose_split(node[child], self.dataset)
+            for child in ['left', 'right']: # for it's child lists
+                if self.decide_class(node[child])[1] < similarity_stop and len(node[child]) > minleafexample: #checks condition
+                    node[child] = self.choose_split(node[child], self.dataset) #splits the child
                     self.unfinished_nodes.append(node[child])
                 else:
                     node[child] = self.decide_class(node[child])
-                # if decide_class(node[child])[1] > 0.8:
-                #     print('man')
         self.tree = root
         return root
 
@@ -189,7 +198,7 @@ class Decisiontree:
 
     # saves the data we need to train the tree
     def load_dataset(self, dataframe):
-        self.dataset, self.dictrid, self.columnnames = openthefile(dataframe)
+        self.dataset, self.dictrid, self.columnnames = transformdatatolists(dataframe)
 
     # creates an output file to store the predictions from the given data
     def make_output_file(self, test_data):

@@ -2,7 +2,7 @@ from sortedcontainers import SortedList
 
 # this function transforms the data from dataframe to a list.
 # This contains lists for the attributes(one list for each) with the id and value of every row (sorted using the values)
-def openthefile(data):
+def transformdatatolists(data):
 
     num_cols = len(data.columns)
     length = len(data)
