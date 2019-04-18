@@ -40,8 +40,6 @@ def openthefile(name):
     #for the training data
     train_data,train_dictionary =  get_data_dictionary(train, num_cols, train_len)
 
-    #for the test data
-    test_data, test_dictionary = get_data_dictionary(test,num_cols,test_len)
 
-    return train_data, train_dictionary,test_data, test_dictionary, data.columns
+    return train_data, train_dictionary,test, data.columns
 

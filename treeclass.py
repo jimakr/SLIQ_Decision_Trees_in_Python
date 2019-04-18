@@ -213,7 +213,7 @@ def print_the_tree(node, columnnames, prefix = ''):
 
 
 #dataset = [listed_data, family_data]
-dataset, dictrid, test_data, test_dictionary, columnnames = openthefile('heart.csv')
+dataset, dictrid, test_data, columnnames = openthefile('heart.csv')
 # print('the dataset is')
 # print(dictrid)
 # columnnames = list(columnnames)
@@ -223,5 +223,25 @@ dataset, dictrid, test_data, test_dictionary, columnnames = openthefile('heart.c
 # print('start trainig')
 tree = train_tree(dataset, 5, 0.9)
 print_the_tree(tree, columnnames)
-ex = [56,1,1,120,236,0,1,178,0,0.8,2,0,2]
-print(make_prediction(tree, ex))
+#ex = [56,1,1,120,236,0,1,178,0,0.8,2,0,2]
+
+def run_tree(test_data,columnnames):
+    num_cols= len(columnnames)
+    #print(num_cols)
+
+    correct = 0
+    #print(test_data)
+    for index in range(len(test_data)):   # for each row
+        ex = []
+        for i in range(num_cols-1):  #for evety column except the last-label
+            ex.append(test_data[test_data.columns[i]].iloc[index])
+        pred = make_prediction(tree, ex)
+        #print(str(pred) + " " + str(test_data[test_data.columns[13]].iloc[index]))
+        if (pred[0] == test_data[test_data.columns[13]].iloc[index]):
+            correct = correct + 1
+
+    print ("accuracy " + str(correct/len(test_data)))
+
+run_tree(test_data,columnnames)
+
+#print(make_prediction(tree, ex))
