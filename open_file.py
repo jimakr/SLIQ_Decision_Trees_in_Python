@@ -1,16 +1,16 @@
 from sortedcontainers import SortedList
-import pandas as pd
 
 
-def openthefile(name):
-    data = pd.read_csv(name, delimiter=',', na_values= ['no info', '.'])
+
+def openthefile(data):
+
     num_cols = len(data.columns)
     length = len(data)
     listed_data = []
     for index in range(num_cols - 1):
         attribute_list = SortedList()  # create list for the attribute, we want it to be sorted
         for i in range(length):
-            list1 = [data[data.columns[index]][i], i]
+            list1 = [data[data.columns[index]].iloc[i], i]
             attribute_list.add(list1)
         listed_data.append(attribute_list)  # add the new list to listed_data
 

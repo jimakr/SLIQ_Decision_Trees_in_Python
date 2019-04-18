@@ -1,6 +1,8 @@
-#Knuth's Algorithm U
-#Takes input a list of items and calculates efficiently the k-subsets
-#k-subsets meaning every possible way to splits a set to k sets
+# Knuth's Algorithm U
+# Takes input a list of items and calculates efficiently the k-subsets
+# k-subsets meaning every possible way to splits a set to k sets
+
+
 def algorithm_u(ns, m):
     def visit(n, a):
         ps = [[] for i in range(m)]
