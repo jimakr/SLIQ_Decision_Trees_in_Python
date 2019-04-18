@@ -15,7 +15,7 @@ tree = dec.train_tree(50, 0.6)
 dec.print_the_tree(tree)
 print("testing")
 dec.calculate_metrics(test_data)
-
+dec.make_output_file(test_data)
 
 
 
