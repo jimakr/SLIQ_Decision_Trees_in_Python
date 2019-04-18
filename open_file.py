@@ -1,6 +1,7 @@
 from sortedcontainers import SortedList
 
-
+# this function transforms the data from dataframe to a list.
+# This contains lists for the attributes(one list for each) with the id and value of every row (sorted using the values)
 def openthefile(data):
 
     num_cols = len(data.columns)
@@ -17,7 +18,5 @@ def openthefile(data):
     dictionary = dict()
     for index in range(length):
         dictionary.update({index: data[data.columns[num_cols - 1]].iloc[index]})
-
-    # print(dictionary)
 
     return listed_data, dictionary, data.columns

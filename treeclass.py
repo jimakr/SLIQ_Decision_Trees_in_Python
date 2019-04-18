@@ -126,6 +126,7 @@ class Decisiontree:
         rightset = set([item[1] for item in right])
         return leftset, rightset
 
+    # gets the set of data and finds the most common class , returns the class and its frequency
     def decide_class(self, leafset):
         temp = Counter([self.dictrid[id] for id in leafset])
         present = temp.most_common(1)[0][1]/len(leafset)
@@ -148,44 +149,49 @@ class Decisiontree:
         self.tree = root
         return root
 
+    # takes a row of data and predicts the label using the decision tree
     def make_prediction(self, node, example):
-        if not isinstance(node, dict):
+        if not isinstance(node, dict):  # if we have reached a decision for the label return it
             return node
-        value = example[node['column_split']]
-        if isinstance(value, str):
-            if node['split'][0].__contains__(value):
+        value = example[node['column_split']]  # column_split has the attribute used to split at that point
+        if isinstance(value, str):    # checks if the attribute contains strings- discrete values
+            if node['split'][0].__contains__(value):  # check if the attribute value belongs the set of the left child
                 res = self.make_prediction(node['left'], example)
             else:
                 res = self.make_prediction(node['right'], example)
-        else:
+        else:                         #checks for numeric values
             if value < node['split']:
                 res = self.make_prediction(node['left'], example)
             else:
                 res = self.make_prediction(node['right'], example)
         return res
 
+    # prints the decision tree
     def print_the_tree(self, node, prefix=''):
         print(prefix[:-2] + "--Split with: " + str(node['split']) + ' at column '+ str(self.columnnames[node['column_split']]))
         prefix = prefix + '|  '
         for child in ['left', 'right']:
-            if isinstance(node[child], dict):
+            if isinstance(node[child], dict): #
                 self.print_the_tree(node[child], prefix)
             else:
                 print(prefix[:-2] + '--' + str(node[child]))
 
+    # gets the predictions for the dataset given and calculates the accuracy
     def calculate_metrics(self, test_data):
         correct = 0
         for index, row in test_data.iterrows():
-            pred = self.make_prediction(self.tree, row)
+            pred = self.make_prediction(self.tree, row) # get prediction for the row
 
             if pred[0] == row[-1]:
                 correct = correct + 1
 
         print ("accuracy " + str(correct/len(test_data)))
 
+    # saves the data we need to train the tree
     def load_dataset(self, dataframe):
         self.dataset, self.dictrid, self.columnnames = openthefile(dataframe)
 
+    # creates an output file to store the predictions from the given data
     def make_output_file(self, test_data):
         with open('output.csv', 'w', newline='') as myfile:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
@@ -193,3 +199,4 @@ class Decisiontree:
                 pred = self.make_prediction(self.tree, row)
                 wr.writerow([pred[0]])
         myfile.close()
+        return myfile
