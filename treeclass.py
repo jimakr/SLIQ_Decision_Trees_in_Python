@@ -1,6 +1,7 @@
 from algorithm_u import algorithm_u
 from collections import Counter
 from open_file import transformdatatolists
+import csv
 
 
 # the main tree class contains all the values needed and the data to train it
@@ -186,3 +187,11 @@ class Decisiontree:
 
     def load_dataset(self, dataframe):
         self.dataset, self.dictrid, self.columnnames = transformdatatolists(dataframe)
+
+    def make_output_file(self, test_data):
+        with open('output.csv', 'w', newline='') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+            for index, row in test_data.iterrows():
+                pred = self.make_prediction(self.tree, row)
+                wr.writerow([pred[0]])
+        myfile.close()

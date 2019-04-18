@@ -16,8 +16,8 @@ dec.load_dataset(train_data) # loads the dataset into our object
 tree = dec.train_tree(50, 0.9)
 dec.print_the_tree(tree)
 print("testing")
-dec.calculate_metrics(test_data) # calculate accuracy
-
+dec.calculate_metrics(test_data)
+dec.make_output_file(test_data)
 
 
 
