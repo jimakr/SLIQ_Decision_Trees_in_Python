@@ -1,39 +1,41 @@
 from algorithm_u import algorithm_u
 from collections import Counter
-from open_file import openthefile
+from open_file import transformdatatolists
 
 
+# the main tree class contains all the values needed and the data to train it
+# It implements sth SLIQ decision tree algorithm
 class Decisiontree:
-    unfinished_nodes = []
-    tree = {}
-    dataset = []
-    dictrid = {}
+    unfinished_nodes = [] # list with nodes that need splitting
+    tree = {} # our tree model
+    dataset = [] # the transformed data
+    dictrid = {} # a dictionary
     columnnames = []
 
-    def gini_list(self, list_a, list_b, classlist):
-        n1 = len(list_a)
-        n2 = len(list_b)
+    def gini_list(self, leaflist_left, leaflist_right, classlist):
+        n_left = len(leaflist_left)
+        n_right = len(leaflist_right)
 
-        if n1 == 0 or n2 == 0:
+        if n_left == 0 or n_right == 0:  # check for empty lists
             return 2
 
-        n = n1 + n2
-        pos_a = 0.0
-        pos_b = 0.0
+        n = n_left + n_right
+        positive_left = 0.0
+        positive_right = 0.0
 
-        for item in list_a:
+        for item in leaflist_left:
             if classlist[item[1]] == 1:
-                pos_a += 1
+                positive_left += 1
 
-        for item in list_b:
+        for item in leaflist_right:
             if classlist[item[1]] == 1:
-                pos_b += 1
+                positive_right += 1
 
-        neg_a = n1 - pos_a
-        neg_b = n2 - pos_b
-        gini_a = 1 - float((pos_a * pos_a + neg_a * neg_a) / (n1 * n1))
-        gini_b = 1 - float((pos_b * pos_b + neg_b * neg_b) / (n2 * n2))
-        return (n1 / n) * gini_a + (n2 / n) * gini_b
+        neg_a = n_left - positive_left
+        neg_b = n_right - positive_right
+        gini_a = 1 - float((positive_left * positive_left + neg_a * neg_a) / (n_left * n_left))
+        gini_b = 1 - float((positive_right * positive_right + neg_b * neg_b) / (n_right * n_right))
+        return (n_left / n) * gini_a + (n_right / n) * gini_b
 
     def split_list(self, list_a, split):
         right = list_a[split:]
@@ -183,4 +185,4 @@ class Decisiontree:
         print ("accuracy " + str(correct/len(test_data)))
 
     def load_dataset(self, dataframe):
-        self.dataset, self.dictrid, self.columnnames = openthefile(dataframe)
+        self.dataset, self.dictrid, self.columnnames = transformdatatolists(dataframe)
