@@ -12,8 +12,16 @@ class Decisiontree:
     dataset = []  # the transformed data
     dictrid = {}  # a dictionary
     columnnames = []
+    weightmode = False
+    weights = {}  # a dictionary with the weights
 
-    def gini_list(self, leaflist_left, leaflist_right, classlist):
+    def calculate_gini(self, leaflist_left, leaflist_right, classlist):
+        if self.weightmode:
+            return self.calculate_gini_split(leaflist_left, leaflist_right, classlist)
+        else:
+            return self.gini_list_weighted(leaflist_left, leaflist_right, classlist, self.weigths)
+
+    def calculate_gini_split(self, leaflist_left, leaflist_right, classlist):
         n_left = len(leaflist_left)
         n_right = len(leaflist_right)
 
@@ -38,6 +46,38 @@ class Decisiontree:
         gini_b = 1 - float((positive_right * positive_right + neg_b * neg_b) / (n_right * n_right))
         return (n_left / n) * gini_a + (n_right / n) * gini_b
 
+    def gini_list_weighted(self, leaflist_left, leaflist_right, classlist, weights):
+        # check for empty lists
+        if len(leaflist_left) == 0 or len(leaflist_right) == 0:  # check for empty lists
+            return 2
+
+        # initialize weight counters
+        positive_left = 0.0
+        positive_right = 0.0
+        neg_a = 0.0
+        neg_b = 0.0
+
+        # add the weight instead of 1 for each element in counter
+        # so each element counts different than every other
+        for item in leaflist_left:
+            if classlist[item[1]] == 1:
+                positive_left += weights[item[1]]
+            else:
+                neg_a += weights[item[1]]
+
+        for item in leaflist_right:
+            if classlist[item[1]] == 1:
+                positive_right += weights[item[1]]
+            else:
+                neg_b += weights[item[1]]
+
+        n_left = neg_a + positive_left
+        n_right = neg_b + positive_right
+        n = n_left + n_right
+        gini_a = 1 - float((positive_left * positive_left + neg_a * neg_a) / (n_left * n_left))
+        gini_b = 1 - float((positive_right * positive_right + neg_b * neg_b) / (n_right * n_right))
+        return (n_left / n) * gini_a + (n_right / n) * gini_b
+
     # splits the leaflist for an index value
     def split_list(self, leaflist, split):
         right = leaflist[split:]
@@ -45,7 +85,8 @@ class Decisiontree:
         return left, right  # returns 2 lists
 
     # splits the leaflist for two sets of discrete values
-    def split_list_descrete(self, leaflist, split):
+    @staticmethod
+    def split_list_descrete(leaflist, split):
         left = []
         right = []
         for item in leaflist:  # checks every item in list
@@ -67,7 +108,7 @@ class Decisiontree:
             if value[0] != last:
                 last = value[0]
                 left, right = self.split_list(leaflist, index)  # splits the list at that value
-                gini = self.gini_list(left, right, self.dictrid)  # calculates gini index
+                gini = self.calculate_gini(left, right, self.dictrid)  # calculates gini index
                 if best_gini > gini:  # keeps best gini
                     best_gini = gini
                     best_index = index
@@ -90,7 +131,7 @@ class Decisiontree:
 
         for split in sets:  # for every possible split
             a, b = self.split_list_descrete(leaflist, split)  # splits list
-            gini = self.gini_list(a, b, self.dictrid)  # calculates gini
+            gini = self.calculate_gini(a, b, self.dictrid)  # calculates gini
             if best_gini > gini:  # keeps best gini
                 best_gini = gini
                 best_split = split
@@ -201,9 +242,32 @@ class Decisiontree:
 
         print("accuracy " + str(correct / len(test_data)))
 
+    def calculate_weighted_error(self, test_data, weights):
+        correct = 0
+        mask = []
+        for index, row in test_data.iterrows():
+            pred = self.make_prediction(self.tree, row)  # get prediction for the row
+
+            if pred[0] == row[-1]:
+                correct = correct + weights[index]
+                mask[index] = True
+            else:
+                mask[index] = False
+
+        print(correct)
+        return correct, mask
+
     # saves the data we need to train the tree
     def load_dataset(self, dataframe):
         self.dataset, self.dictrid, self.columnnames = transformdatatolists(dataframe)
+
+    def load_weights(self, weights):
+        self.weights = weights
+
+    def unloaddata(self):
+        del self.weights
+        del self.dataset
+        del self.dictrid
 
     # creates an output file to store the predictions from the given data
     def make_output_file(self, test_data):
