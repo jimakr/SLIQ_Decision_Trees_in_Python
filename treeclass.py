@@ -19,7 +19,7 @@ class Decisiontree:
         if self.weightmode:
             return self.calculate_gini_split(leaflist_left, leaflist_right, classlist)
         else:
-            return self.gini_list_weighted(leaflist_left, leaflist_right, classlist, self.weigths)
+            return self.gini_list_weighted(leaflist_left, leaflist_right, classlist, self.weights)
 
     def calculate_gini_split(self, leaflist_left, leaflist_right, classlist):
         n_left = len(leaflist_left)
@@ -181,8 +181,8 @@ class Decisiontree:
     # gets the set of data and finds the most common class , returns the class and its frequency
     def decide_class(self, leafset):
         temp = Counter([self.dictrid[id] for id in leafset])
-        present = temp.most_common(1)[0][1] / len(leafset)
-        return temp.most_common(1)[0][0], present
+        percent = temp.most_common(1)[0][1] / len(leafset)
+        return temp.most_common(1)[0][0], percent
 
     # trains the tree and takes as input minimum number of childer and similariry of class in leaf in order to split it
     def train_tree(self, minleafexample, similarity_stop, maxdepth):
@@ -243,19 +243,19 @@ class Decisiontree:
         print("accuracy " + str(correct / len(test_data)))
 
     def calculate_weighted_error(self, test_data, weights):
-        correct = 0
-        mask = []
+        error = 0
+        mask = [False] * len(test_data)
+        i = 0
         for index, row in test_data.iterrows():
             pred = self.make_prediction(self.tree, row)  # get prediction for the row
 
-            if pred[0] == row[-1]:
-                correct = correct + weights[index]
-                mask[index] = True
-            else:
-                mask[index] = False
+            if pred[0] != row[-1]:
+                error = error + weights[i]
+                mask[i] = True
+            i += 1
 
-        print(correct)
-        return correct, mask
+        print(error)
+        return error, mask
 
     # saves the data we need to train the tree
     def load_dataset(self, dataframe):
