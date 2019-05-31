@@ -9,7 +9,7 @@ msk = np.random.rand(len(data)) < 0.9  # split the dataset 90-10 for train and t
 train_data = data[msk]
 test_data = data[~msk]
 
-dec = Decisiontree() # create the dicision tree object
+dec = Decisiontree() # create the decision tree object
 print("training")
 dec.load_dataset(train_data) # loads the dataset into our object
 # train and define minimum number of children and the similarity in each leaf in order to split
