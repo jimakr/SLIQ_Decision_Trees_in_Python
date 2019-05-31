@@ -3,7 +3,7 @@ from treeclass import Decisiontree
 import numpy as np
 
 # load the dataset and define the no value symbol in the dataset
-# beacuse 2^k are the possible subsets to check in k discrete values we take only a portion of the data
+# because 2^k are the possible subsets to check in k discrete values we take only a portion of the data
 data = pd.read_csv('heart.csv', delimiter=',', na_values=['no info', '.'])[0:3000]
 msk = np.random.rand(len(data)) < 0.9  # split the dataset 90-10 for train and test randomly choosing rows
 train_data = data[msk]

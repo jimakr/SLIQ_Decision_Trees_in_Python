@@ -9,18 +9,18 @@ import csv
 class Decisiontree:
     unfinished_nodes = []  # list with nodes that need splitting
     tree = {}  # our tree model
-    dataset = []  # the transformed data
-    dictrid = {}  # a dictionary
+    dataset = []  # the transformed data, each row is described by an id
+    dictrid = {}  # a dictionary containing the correct class for every id
     columnnames = []
-    weightmode = False
-    weights = {}  # a dictionary with the weights
+    weightmode = False  # turns to true when we load weights
+    weights = {}  # a dictionary with the optional weights
 
-    # calculates the gini using weights or not , depending on the mode
+    # calculates the gini using weights or not , depending on the weight mode
     def calculate_gini(self, leaflist_left, leaflist_right, classlist):
         if self.weightmode:
-            return self.calculate_gini_split(leaflist_left, leaflist_right, classlist)
+            return self.calculate_gini_weighted(leaflist_left, leaflist_right, classlist, self.weights)
         else:
-            return self.gini_list_weighted(leaflist_left, leaflist_right, classlist, self.weights)
+            return self.calculate_gini_split(leaflist_left, leaflist_right, classlist)
 
     def calculate_gini_split(self, leaflist_left, leaflist_right, classlist):
         n_left = len(leaflist_left)
@@ -48,7 +48,7 @@ class Decisiontree:
         return (n_left / n) * gini_a + (n_right / n) * gini_b
 
     # calculates gini using weights
-    def gini_list_weighted(self, leaflist_left, leaflist_right, classlist, weights):
+    def calculate_gini_weighted(self, leaflist_left, leaflist_right, classlist, weights):
         # check for empty lists
         if len(leaflist_left) == 0 or len(leaflist_right) == 0:  # check for empty lists
             return 2
@@ -247,14 +247,14 @@ class Decisiontree:
     # calculates the error using the weights
     def calculate_weighted_error(self, test_data, weights):
         error = 0
-        mask = [True] * len(test_data)  # mask for the wrongly classified examples
+        mask = [True] * len(test_data)  # mask for the correct classified examples
         i = 0
         for index, row in test_data.iterrows():
             pred = self.make_prediction(self.tree, row)  # get prediction for the row
 
             if pred[0] != row[-1]:
                 error = error + weights[i]  # adds to the error the weight of the wrongly classified example
-                mask[i] = False
+                mask[i] = False  # mark every wrong sample
             i += 1
 
         print("Tree error: " + str(error))
@@ -266,7 +266,9 @@ class Decisiontree:
 
     def load_weights(self, weights):
         self.weights = weights
+        self.weightmode = True
 
+    # deletes data inside the model to make it lightweight for storing
     def unloaddata(self):
         del self.weights
         del self.dataset
