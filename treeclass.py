@@ -182,7 +182,7 @@ class Decisiontree:
 
     # gets the set of data and finds the most common class , returns the class and its frequency
     def decide_class(self, leafset):
-        temp = Counter([self.dictrid[id] for id in leafset])
+        temp = Counter([self.dictrid[itemid] for itemid in leafset])
         percent = temp.most_common(1)[0][1] / len(leafset)
         return temp.most_common(1)[0][0], percent
 

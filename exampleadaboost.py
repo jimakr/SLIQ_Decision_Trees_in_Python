@@ -1,6 +1,5 @@
 import pandas as pd
-from treeclass import Decisiontree
-from adaboost import adaboost
+from adaboost import AdaBoost
 import numpy as np
 
 # load the dataset and define the no value symbol in the dataset
@@ -11,7 +10,7 @@ train_data = data[msk]
 test_data = data[~msk]
 
 print("start the training")
-adabo = adaboost(train_data)
+adabo = AdaBoost(train_data)
 dec = adabo.maketree(3)
 # print(adabo.weight_dict)
 adabo.trainadaboost()
@@ -19,8 +18,3 @@ adabo.printtrees()
 # print(adabo.predict_sample(test_data.iloc[0]))
 adabo.make_output_file(test_data)
 adabo.calculate_metrics(test_data)
-
-
-
-
-

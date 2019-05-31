@@ -3,15 +3,16 @@ import math
 import operator
 import csv
 
+
 # the adaboost class
-class adaboost:
+class AdaBoost:
     tree_list = []
     tree_weight_list = []
 
-    def __init__(self, dataset, numberoftrees = 10):
+    def __init__(self, dataset, numberoftrees=10):
         self.dataset = dataset
         length = len(self.dataset)
-        self.weight_dict = {i : 1 / length for i in range(length)}
+        self.weight_dict = {i: 1 / length for i in range(length)}
         self.numberofclassifiers = numberoftrees
 
     # creates a tree and trains it
@@ -29,7 +30,7 @@ class adaboost:
                 self.weight_dict[i] *= error / (1 - error)
 
         weight_sum = sum(self.weight_dict.values())
-        self.weight_dict = {key : item / weight_sum for key,item in self.weight_dict.items()}
+        self.weight_dict = {key: item / weight_sum for key, item in self.weight_dict.items()}
 
     # train trees until we reach the desired number of classifiers,or until the number of discarded trees reaches a max,
     # the tree is discarded if the error is >0.5
@@ -50,7 +51,6 @@ class adaboost:
         if numberofdis == maxdiscards:
             print("warning could not find enough models due to high error")
             print("found : " + str(len(self.tree_list)) + " models")
-
 
     def printtrees(self):
         for tree in self.tree_list:
@@ -79,7 +79,6 @@ class adaboost:
 
         return max(classes.items(), key=operator.itemgetter(1))[0]
 
-
     def calculate_metrics(self, test_data):
         correct = 0
         for index, row in test_data.iterrows():
@@ -99,5 +98,3 @@ class adaboost:
                 wr.writerow([pred])
         myfile.close()
         return myfile
-
-
