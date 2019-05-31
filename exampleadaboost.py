@@ -16,7 +16,7 @@ dec = adabo.maketree(3)
 # print(adabo.weight_dict)
 adabo.trainadaboost()
 adabo.printtrees()
-print(adabo.predict_sample(test_data.iloc[0]))
+# print(adabo.predict_sample(test_data.iloc[0]))
 adabo.make_output_file(test_data)
 adabo.calculate_metrics(test_data)
 
