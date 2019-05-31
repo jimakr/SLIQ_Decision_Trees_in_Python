@@ -15,6 +15,7 @@ class Decisiontree:
     weightmode = False
     weights = {}  # a dictionary with the weights
 
+    # calculates the gini using weights or not , depending on the mode
     def calculate_gini(self, leaflist_left, leaflist_right, classlist):
         if self.weightmode:
             return self.calculate_gini_split(leaflist_left, leaflist_right, classlist)
@@ -46,6 +47,7 @@ class Decisiontree:
         gini_b = 1 - float((positive_right * positive_right + neg_b * neg_b) / (n_right * n_right))
         return (n_left / n) * gini_a + (n_right / n) * gini_b
 
+    # calculates gini using weights
     def gini_list_weighted(self, leaflist_left, leaflist_right, classlist, weights):
         # check for empty lists
         if len(leaflist_left) == 0 or len(leaflist_right) == 0:  # check for empty lists
@@ -242,15 +244,16 @@ class Decisiontree:
 
         print("accuracy " + str(correct / len(test_data)))
 
+    # calculates the error using the weights
     def calculate_weighted_error(self, test_data, weights):
         error = 0
-        mask = [False] * len(test_data)
+        mask = [False] * len(test_data)  # mask for the wrongly classified examples
         i = 0
         for index, row in test_data.iterrows():
             pred = self.make_prediction(self.tree, row)  # get prediction for the row
 
             if pred[0] != row[-1]:
-                error = error + weights[i]
+                error = error + weights[i]  # adds to the error the weight of the wrongly classified example
                 mask[i] = True
             i += 1
 

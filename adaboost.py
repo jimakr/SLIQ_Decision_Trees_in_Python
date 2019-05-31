@@ -3,7 +3,7 @@ import math
 import operator
 import csv
 
-
+# the adaboost class
 class adaboost:
     tree_list = []
     tree_weight_list = []
@@ -14,6 +14,7 @@ class adaboost:
         self.weight_dict = {i : 1 / length for i in range(length)}
         self.numberofclassifiers = numberoftrees
 
+    # creates a tree and trains it
     def maketree(self):
         dec = Decisiontree()  # create the dicision tree object
         dec.load_dataset(self.dataset)  # loads the dataset into our object
@@ -30,6 +31,8 @@ class adaboost:
         weight_sum = sum(self.weight_dict.values())
         self.weight_dict = {key : item / weight_sum for key,item in self.weight_dict.items()}
 
+    # train trees until we reach the desired number of classifiers,or until the number of discarded trees reaches a max,
+    # the tree is discarded if the error is >0.5
     def trainadaboost(self, maxdiscards):
         numberofdis = 0
         while len(self.tree_list) < self.numberofclassifiers and numberofdis < maxdiscards:
@@ -50,13 +53,15 @@ class adaboost:
             # tree = Decisiontree()
             tree.print_the_tree(tree.tree)
 
+    # predicts the output for one row by getting the prediction from all the trees with their weights, and returning the
+    # output with the most (weighted) votes
     def predict_sample(self, sample):
         classes = dict()
         i = 0
         for tree in self.tree_list:
             pred = tree.make_prediction(tree.tree, sample)[0]
 
-            if not classes.__contains__(pred):
+            if not classes.__contains__(pred):  # if this is the first time seeing this output, add it to the dictionary
                 classes[pred] = 0.0
 
             classes[pred] += self.tree_weight_list[i]
@@ -65,6 +70,7 @@ class adaboost:
 
         return max(classes.items(), key=operator.itemgetter(1))[0]
 
+    # make predictions for the test data
     def predict(self, testdata):
         for row in testdata.iterrows():
             self.predict_sample(row)
