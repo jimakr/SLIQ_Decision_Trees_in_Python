@@ -247,17 +247,17 @@ class Decisiontree:
     # calculates the error using the weights
     def calculate_weighted_error(self, test_data, weights):
         error = 0
-        mask = [False] * len(test_data)  # mask for the wrongly classified examples
+        mask = [True] * len(test_data)  # mask for the wrongly classified examples
         i = 0
         for index, row in test_data.iterrows():
             pred = self.make_prediction(self.tree, row)  # get prediction for the row
 
             if pred[0] != row[-1]:
                 error = error + weights[i]  # adds to the error the weight of the wrongly classified example
-                mask[i] = True
+                mask[i] = False
             i += 1
 
-        print(error)
+        print("Tree error: " + str(error))
         return error, mask
 
     # saves the data we need to train the tree
