@@ -10,11 +10,13 @@ train_data = data[msk]
 test_data = data[~msk]
 
 print("start the training")
+# create an AdaBoost object and pass the train data,the user can define the max number of trees, but the default is 10
+# adabo = AdaBoost(train_data,8)
 adabo = AdaBoost(train_data)
-dec = adabo.maketree(3)
-# print(adabo.weight_dict)
+# train AdaBoost with default max tree depth=1 , the user can define this parameter
 adabo.trainadaboost()
+# print all the trees found
 adabo.printtrees()
-# print(adabo.predict_sample(test_data.iloc[0]))
+# print(adabo.predict_sample(test_data.iloc[0]))  #predicts the output for the first row of test data
 adabo.make_output_file(test_data)
 adabo.calculate_metrics(test_data)
